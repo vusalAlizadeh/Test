@@ -15,12 +15,13 @@
       .slider {
         display: flex;
         transition: transform 0.3s ease;
-        gap: 40px;
+        gap: 50px;
         padding-left: 30px;
+        justify-content: flex-start;
       }
       .slide {
         flex: 0 0 300px;
-        width: 300px;
+        width: 400px;
         height: 400px;
       }
     </style>
@@ -36,8 +37,12 @@
 
     <script>
       const slider = document.querySelector(".slider");
-      let isScrolling = false;
       let startX;
+      let currentSlide = 0;
+      const slides = document.querySelectorAll(".slide");
+      const numSlides = slides.length;
+      const slideWidth = slides[0].clientWidth;
+      let isScrolling = false;
 
       function handleTouchStart(e) {
         isScrolling = true;
@@ -48,54 +53,45 @@
         if (!isScrolling) return;
         const x = e.touches[0].clientX;
         const move = startX - x;
-        slider.style.transform = `translateX(-${move}px)`;
+        slider.style.transition = "none";
+        slider.style.transform = `translateX(-${
+          currentSlide * slideWidth + move
+        }px)`;
       }
 
       function handleTouchEnd(e) {
         isScrolling = false;
         const endX = e.changedTouches[0].clientX;
         const move = startX - endX;
+        slider.style.transition = "transform 0.3s ease";
+
         if (Math.abs(move) > 50) {
           if (move > 0) {
             // swipe left
-            slideNext();
+            currentSlide = (currentSlide + 1) % numSlides;
           } else {
             // swipe right
-            slidePrev();
+            currentSlide = (currentSlide - 1 + numSlides) % numSlides;
           }
-        } else {
-          slider.style.transform = "translateX(0)";
         }
+        console.log(currentSlide == 3);
+        slider.style.transform = `translateX(-${
+          currentSlide * slideWidth + 20
+        }px)`;
       }
 
-      function slideNext() {
-        const slideWidth = slider.querySelector(".slide").clientWidth;
-        const numSlides = slider.querySelectorAll(".slide").length;
-        const currentTranslate = parseFloat(
-          slider.style.transform.replace("translateX(", "").replace("px)", "")
-        );
-        const nextTranslate = currentTranslate - slideWidth;
-        if (Math.abs(nextTranslate) <= slideWidth * (numSlides - 1)) {
-          slider.style.transform = `translateX(${nextTranslate}px)`;
-        } else {
+      function loop() {
+        if (!isScrolling) {
+          currentSlide = (currentSlide + 1) % numSlides;
+          slider.style.transition = "transform 0.3s ease";
           slider.style.transform = `translateX(-${
-            slideWidth * (numSlides - 1)
+            currentSlide * slideWidth + 20
           }px)`;
         }
+        // Change slide every 5 seconds
       }
 
-      function slidePrev() {
-        const slideWidth = slider.querySelector(".slide").clientWidth;
-        const currentTranslate = parseFloat(
-          slider.style.transform.replace("translateX(", "").replace("px)", "")
-        );
-        const prevTranslate = currentTranslate + slideWidth;
-        if (prevTranslate <= 0) {
-          slider.style.transform = `translateX(${prevTranslate}px)`;
-        } else {
-          slider.style.transform = `translateX(0)`;
-        }
-      }
+      loop();
 
       slider.addEventListener("touchstart", handleTouchStart);
       slider.addEventListener("touchmove", handleTouchMove);
