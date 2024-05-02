@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mobile Slider</title>
+    <style>
+      .slider-container {
+        width: 100%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        height: 100vh;
+      }
+      .slider {
+        display: flex;
+        transition: transform 0.3s ease;
+        gap: 40px;
+        padding-left: 30px;
+      }
+      .slide {
+        flex: 0 0 300px;
+        width: 300px;
+        height: 400px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="slider-container">
+      <div class="slider">
+        <div class="slide" style="background-color: #ff6347">Slide 1</div>
+        <div class="slide" style="background-color: #4682b4">Slide 2</div>
+        <div class="slide" style="background-color: #32cd32">Slide 3</div>
+      </div>
+    </div>
+
+    <script>
+      const slider = document.querySelector(".slider");
+      let isScrolling = false;
+      let startX;
+
+      function handleTouchStart(e) {
+        isScrolling = true;
+        startX = e.touches[0].clientX;
+      }
+
+      function handleTouchMove(e) {
+        if (!isScrolling) return;
+        const x = e.touches[0].clientX;
+        const move = startX - x;
+        slider.style.transform = `translateX(-${move}px)`;
+      }
+
+      function handleTouchEnd(e) {
+        isScrolling = false;
+        const endX = e.changedTouches[0].clientX;
+        const move = startX - endX;
+        if (Math.abs(move) > 50) {
+          if (move > 0) {
+            // swipe left
+            slideNext();
+          } else {
+            // swipe right
+            slidePrev();
+          }
+        } else {
+          slider.style.transform = "translateX(0)";
+        }
+      }
+
+      function slideNext() {
+        const slideWidth = slider.querySelector(".slide").clientWidth;
+        const numSlides = slider.querySelectorAll(".slide").length;
+        const currentTranslate = parseFloat(
+          slider.style.transform.replace("translateX(", "").replace("px)", "")
+        );
+        const nextTranslate = currentTranslate - slideWidth;
+        if (Math.abs(nextTranslate) <= slideWidth * (numSlides - 1)) {
+          slider.style.transform = `translateX(${nextTranslate}px)`;
+        } else {
+          slider.style.transform = `translateX(-${
+            slideWidth * (numSlides - 1)
+          }px)`;
+        }
+      }
+
+      function slidePrev() {
+        const slideWidth = slider.querySelector(".slide").clientWidth;
+        const currentTranslate = parseFloat(
+          slider.style.transform.replace("translateX(", "").replace("px)", "")
+        );
+        const prevTranslate = currentTranslate + slideWidth;
+        if (prevTranslate <= 0) {
+          slider.style.transform = `translateX(${prevTranslate}px)`;
+        } else {
+          slider.style.transform = `translateX(0)`;
+        }
+      }
+
+      slider.addEventListener("touchstart", handleTouchStart);
+      slider.addEventListener("touchmove", handleTouchMove);
+      slider.addEventListener("touchend", handleTouchEnd);
+    </script>
+  </body>
+</html>
